@@ -1,0 +1,81 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions", "relationJoins", "nativeDistinct", "prismaSchemaFolder", "multiSchema"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [hstore(schema: "public"), pg_trgm, uuidOssp(map: "uuid-ossp")]
+}
+
+generator nestgraphql {
+  provider = "prisma-nestjs-graphql"
+  output   = "../../types"
+}
+
+enum user_role {
+  USER
+  ADMIN
+}
+
+model User {
+  id       String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  email    String    @unique
+  /// @HideField()
+  password String
+  role     user_role @default(USER)
+
+  createdAt DateTime  @default(now()) @db.Timestamptz
+  updatedAt DateTime  @updatedAt @db.Timestamptz
+  deletedAt DateTime? @db.Timestamptz
+}
+
+model Quiz {
+  id          String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  title       String
+  description String?
+  timeLimit   Int?
+  isPublished Boolean @default(false)
+  link        String? @unique
+
+  createdAt DateTime   @default(now()) @db.Timestamptz
+  updatedAt DateTime   @updatedAt @db.Timestamptz
+  deletedAt DateTime?  @db.Timestamptz
+  Question  Question[]
+}
+
+enum question_type {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  SHORT_ANSWER
+}
+
+model Question {
+  id     String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  quizId String        @db.Uuid
+  text   String
+  type   question_type @default(MULTIPLE_CHOICE)
+
+  Quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now()) @db.Timestamptz
+  updatedAt DateTime  @updatedAt @db.Timestamptz
+  deletedAt DateTime? @db.Timestamptz
+  answer    Answer[]
+}
+
+model Answer {
+  id         String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  questionId String  @db.Uuid
+  text       String
+  isCorrect  Boolean @default(false)
+
+  Question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now()) @db.Timestamptz
+  updatedAt DateTime  @updatedAt @db.Timestamptz
+  deletedAt DateTime? @db.Timestamptz
+
+  @@unique([questionId, text])
+}
