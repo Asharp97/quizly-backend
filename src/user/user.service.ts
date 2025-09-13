@@ -103,7 +103,7 @@ export class UserService {
     }
   }
 
-  private generateToken(user: User) {
+  private generateToken(user: User): authResponseDTO {
     const sessionId = v4();
 
     const _accessTokenKey = `accessToken:${user?.id}:${sessionId}`;
@@ -165,5 +165,23 @@ export class UserService {
     } catch {
       throw new Error('Invalid token');
     }
+  }
+
+  async googleAuth(user: User): Promise<authResponseDTO | null> {
+    if (!user) {
+      throw new Error('No user from google');
+    }
+
+    const userExists = await this.repo.getUserByEmail(user.email);
+    if (userExists) {
+      return this.generateToken(userExists);
+    }
+
+    const newUser = await this.repo.createUser({
+      email: user.email,
+      password: '',
+    });
+
+    return this.generateToken(newUser);
   }
 }

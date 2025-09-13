@@ -40,10 +40,20 @@ import { AnswerModule } from './answer/answer.module';
         },
       }),
     }),
-    JwtModule.register({
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => {
+        const secret = configService.get<string>('API_JWT_SECRET');
+        console.log(`--- JWT Secret from .env: ${secret} ---`); // This is the debug line
+        return {
+          secret,
+          signOptions: {
+            issuer: configService.get<string>('API_JWT_ISSUER'),
+          },
+        };
+      },
+      inject: [ConfigService],
       global: true,
-      secret: process.env.API_JWT_SECRET,
-      signOptions: { issuer: process.env.API_JWT_ISSUER },
     }),
     ScheduleModule.forRoot(),
     UserModule,
