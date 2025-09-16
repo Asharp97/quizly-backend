@@ -9,7 +9,7 @@ import { authResponseDTO } from './dto/authResponse.dto';
 import { Public } from 'src/common/decorators/public.decorator';
 import { LogoutResponse } from './dto/logoutResponse.dto';
 import type { GqlContext } from 'src/common/types/gql-context.type';
-import extractTokenFromHeader from 'src/common/utils/extractTokenFromHeader';
+import { CookieOptions, Response, Request } from 'express';
 
 @Resolver()
 export class UserResolver {
@@ -58,10 +58,43 @@ export class UserResolver {
     return this.userService.getUserByEmail(email);
   }
 
+  handleCookies(res: Response, authRes: authResponseDTO) {
+    // if (process.env.AUTH_STRATEGY !== 'httpOnlyCookie') return;
+    const cookieOptions: CookieOptions = {
+      httpOnly: true,
+      path: '/',
+      secure: true, // Required for SameSite=None
+      sameSite: 'none', // Allows cross-origin cookies
+    };
+
+    const accessTokenCookieOptions: CookieOptions = {
+      ...cookieOptions,
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    };
+
+    const refreshTokenCookieOptions: CookieOptions = {
+      ...cookieOptions,
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    };
+
+    res.cookie('accessToken', authRes.accessToken, accessTokenCookieOptions);
+    res.cookie('refreshToken', authRes.refreshToken, refreshTokenCookieOptions);
+  }
+
   @Public()
   @Mutation(() => authResponseDTO, { name: 'SignUp' })
-  async signUp(@Args('data') data: signUpRequestDTO): Promise<authResponseDTO> {
-    return this.userService.signUp(data);
+  async signUp(
+    @Args('data') data: signUpRequestDTO,
+    @Context() { res }: { res: Response },
+  ): Promise<authResponseDTO> {
+    const authRes = await this.userService.signUp(data);
+    if (!authRes || !authRes.accessToken || !authRes.refreshToken) {
+      throw new Error('Sign up failed');
+    }
+
+    this.handleCookies(res, authRes);
+
+    return authRes;
   }
 
   @Public()
@@ -69,16 +102,68 @@ export class UserResolver {
   async login(
     @Args('email', { type: () => String }) email: string,
     @Args('password', { type: () => String }) password: string,
-  ): Promise<authResponseDTO | null> {
-    return this.userService.login(email, password);
+    @Context() { res }: { res: Response },
+  ): Promise<authResponseDTO> {
+    const authRes = await this.userService.login(email, password);
+    if (!authRes || !authRes.accessToken || !authRes.refreshToken) {
+      throw new Error('Login failed');
+    }
+
+    this.handleCookies(res, authRes);
+
+    return authRes;
   }
 
+  @Public()
   @Mutation(() => LogoutResponse, { name: 'Logout' })
-  async logout(@Context() context: GqlContext): Promise<LogoutResponse> {
-    const accessToken = extractTokenFromHeader(context.req);
+  async logout(@Context() { req, res }: GqlContext): Promise<LogoutResponse> {
+    const accessToken: string = req.cookies?.accessToken;
+
+    if (!accessToken) {
+      // Even if there's no token, we can just clear cookies and confirm logout
+      res.clearCookie('accessToken');
+      res.clearCookie('refreshToken');
+      return { message: 'Logged out successfully', success: true };
+    }
+
+    const result = await this.userService.logout(accessToken);
+
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+
+    return result;
+  }
+
+  @Public() // Refresh endpoint needs to be public but requires a valid refresh token
+  @Mutation(() => authResponseDTO, { name: 'RefreshToken' })
+  async refreshToken(
+    @Args('refreshToken', { type: () => String }) refreshToken: string,
+    @Context() { res }: { res: Response },
+  ): Promise<authResponseDTO> {
+    if (!refreshToken) {
+      throw new Error('Refresh token is missing');
+    }
+
+    const authRes = await this.userService.refreshToken(refreshToken);
+    if (!authRes) {
+      throw new Error('Failed to refresh token');
+    }
+
+    this.handleCookies(res, authRes);
+
+    return authRes;
+  }
+
+  @Query(() => User, { name: 'Me' })
+  async me(@Context() { req }): Promise<User | null> {
+    const accessToken: string = req.token;
     if (!accessToken) {
       throw new Error('Access token is missing');
     }
-    return await this.userService.logout(accessToken);
+    const user = await this.userService.getUserFromToken(accessToken);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    return user;
   }
 }

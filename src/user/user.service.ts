@@ -71,11 +71,11 @@ export class UserService {
   ): Promise<authResponseDTO | null> {
     const user = await this.repo.getUserByEmail(email.toLowerCase());
     if (!user) {
-      throw new Error('User not found');
+      throw new Error('Invalid credentials');
     }
     const isPasswordValid = await compare(password, user.password);
     if (!isPasswordValid) {
-      throw new Error('User not found');
+      throw new Error('Invalid credentials');
     }
     return this.generateToken(user);
   }
@@ -124,8 +124,8 @@ export class UserService {
       },
     };
 
-    const expiresInAccessToken = 7 * 24 * 60 * 60;
-    const expiresInRefreshToken = 30 * 24 * 60 * 60;
+    const expiresInAccessToken = 15 * 60; // 15 minutes
+    const expiresInRefreshToken = 30 * 24 * 60 * 60; // 30 days
 
     const _accessToken = this.jwtService.sign(_accessTokenPayload, {
       expiresIn: expiresInAccessToken,
@@ -183,5 +183,56 @@ export class UserService {
     });
 
     return this.generateToken(newUser);
+  }
+
+  async refreshToken(refreshToken: string): Promise<authResponseDTO> {
+    let payload: { data: { userId: string; sessionId: string } };
+    try {
+      // 1. Verify the refresh token.
+      payload = await this.jwtService.verifyAsync(refreshToken);
+    } catch (error) {
+      throw new UnauthorizedException(
+        'Refresh token is invalid or has expired.' + error.message,
+      );
+    }
+
+    const { userId, sessionId } = payload.data;
+
+    if (!userId || !sessionId) {
+      throw new UnauthorizedException('Invalid refresh token payload.');
+    }
+
+    const refreshTokenKey = `refreshToken:${userId}:${sessionId}`;
+    const storedToken = await this.redis.exists(refreshTokenKey);
+
+    if (!storedToken) {
+      throw new UnauthorizedException('This session has been logged out.');
+    }
+
+    // 3. Get the user's data.
+    const user = await this.repo.getUser(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found.');
+    }
+
+    const accessTokenKey = `accessToken:${userId}:${sessionId}`;
+    await this.redis.del(accessTokenKey, refreshTokenKey);
+
+    return this.generateToken(user);
+  }
+
+  async getUserFromToken(token: string): Promise<User | null> {
+    try {
+      const payload: { data: { userId: string } } =
+        this.jwtService.verify(token);
+      const userId = payload.data?.userId;
+      if (!userId) {
+        throw new Error('Invalid token payload');
+      }
+      return await this.repo.getUser(userId);
+    } catch (error) {
+      console.error('Error getting user from token:', error.message);
+      return null;
+    }
   }
 }

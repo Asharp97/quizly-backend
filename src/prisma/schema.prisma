@@ -26,9 +26,10 @@ model User {
   password String
   role     user_role @default(USER)
 
-  createdAt DateTime  @default(now()) @db.Timestamptz
-  updatedAt DateTime  @updatedAt @db.Timestamptz
-  deletedAt DateTime? @db.Timestamptz
+  createdAt      DateTime         @default(now()) @db.Timestamptz
+  updatedAt      DateTime         @updatedAt @db.Timestamptz
+  deletedAt      DateTime?        @db.Timestamptz
+  QuizSubmission QuizSubmission[]
 }
 
 model Quiz {
@@ -39,10 +40,11 @@ model Quiz {
   isPublished Boolean @default(false)
   link        String? @unique
 
-  createdAt DateTime   @default(now()) @db.Timestamptz
-  updatedAt DateTime   @updatedAt @db.Timestamptz
-  deletedAt DateTime?  @db.Timestamptz
-  Question  Question[]
+  createdAt      DateTime         @default(now()) @db.Timestamptz
+  updatedAt      DateTime         @updatedAt @db.Timestamptz
+  deletedAt      DateTime?        @db.Timestamptz
+  Question       Question[]
+  QuizSubmission QuizSubmission[]
 }
 
 enum question_type {
@@ -59,10 +61,11 @@ model Question {
 
   Quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime  @default(now()) @db.Timestamptz
-  updatedAt DateTime  @updatedAt @db.Timestamptz
-  deletedAt DateTime? @db.Timestamptz
-  answer    Answer[]
+  createdAt        DateTime           @default(now()) @db.Timestamptz
+  updatedAt        DateTime           @updatedAt @db.Timestamptz
+  deletedAt        DateTime?          @db.Timestamptz
+  answer           Answer[]
+  AnswerSubmission AnswerSubmission[]
 }
 
 model Answer {
@@ -73,9 +76,45 @@ model Answer {
 
   Question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
+  createdAt        DateTime           @default(now()) @db.Timestamptz
+  updatedAt        DateTime           @updatedAt @db.Timestamptz
+  deletedAt        DateTime?          @db.Timestamptz
+  AnswerSubmission AnswerSubmission[]
+
+  @@unique([questionId, text])
+}
+
+model QuizSubmission {
+  id        String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  quizId    String @db.Uuid
+  userId    String @db.Uuid
+  score     Float
+  total     Float
+  timeTaken Int // in seconds
+
+  Quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime           @default(now()) @db.Timestamptz
+  updatedAt        DateTime           @updatedAt @db.Timestamptz
+  deletedAt        DateTime?          @db.Timestamptz
+  AnswerSubmission AnswerSubmission[]
+}
+
+model AnswerSubmission {
+  id              String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  submittedQuizId String  @db.Uuid
+  questionId      String  @db.Uuid
+  answerId        String? @db.Uuid
+  text            String?
+
+  QuizSubmission QuizSubmission @relation(fields: [submittedQuizId], references: [id], onDelete: Cascade)
+  Question       Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  Answer         Answer?        @relation(fields: [answerId], references: [id], onDelete: SetNull)
+
   createdAt DateTime  @default(now()) @db.Timestamptz
   updatedAt DateTime  @updatedAt @db.Timestamptz
   deletedAt DateTime? @db.Timestamptz
 
-  @@unique([questionId, text])
+  @@unique([submittedQuizId, questionId])
 }

@@ -44,7 +44,6 @@ import { AnswerModule } from './answer/answer.module';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
         const secret = configService.get<string>('API_JWT_SECRET');
-        console.log(`--- JWT Secret from .env: ${secret} ---`); // This is the debug line
         return {
           secret,
           signOptions: {

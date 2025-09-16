@@ -53,6 +53,7 @@ export class AuthGuard implements CanActivate {
         throw new UnauthorizedException('Session has been terminated');
       }
       request['user'] = payload;
+      request['token'] = token;
     } catch (err) {
       console.error(err);
       throw new UnauthorizedException();
