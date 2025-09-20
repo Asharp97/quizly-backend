@@ -36,7 +36,7 @@ export class QuizRepository {
     return this.prisma.quiz.update(params);
   }
 
-  createQuiz(data: Prisma.QuizUncheckedCreateInput): Promise<Quiz> {
+  createQuiz(data: Prisma.QuizCreateInput): Promise<Quiz> {
     return this.prisma.quiz.create({ data });
   }
 }

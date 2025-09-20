@@ -30,21 +30,31 @@ model User {
   updatedAt      DateTime         @updatedAt @db.Timestamptz
   deletedAt      DateTime?        @db.Timestamptz
   QuizSubmission QuizSubmission[]
+  Quiz           Quiz[]
 }
 
 model Quiz {
-  id          String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  title       String
-  description String?
-  timeLimit   Int?
-  isPublished Boolean @default(false)
-  link        String? @unique
+  id             String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  title          String
+  link           String    @unique
+  userId         String    @db.Uuid
+  description    String?
+  timeLimit      Int?
+  deadline       DateTime? @db.Timestamptz
+  publishedAt    DateTime  @default(now()) @db.Timestamptz
+  enableFeedback Boolean   @default(false)
+  // shuffleQuestions Boolean   @default(false)
+  // enableTimer      Boolean   @default(false)
+  // allowRetake      Boolean   @default(false)
+  // maxRetakes       Int?      @default(0)
+  // passPercentage   Int?      @default(0)
 
   createdAt      DateTime         @default(now()) @db.Timestamptz
   updatedAt      DateTime         @updatedAt @db.Timestamptz
   deletedAt      DateTime?        @db.Timestamptz
   Question       Question[]
   QuizSubmission QuizSubmission[]
+  User           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum question_type {
@@ -54,10 +64,12 @@ enum question_type {
 }
 
 model Question {
-  id     String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  quizId String        @db.Uuid
-  text   String
-  type   question_type @default(MULTIPLE_CHOICE)
+  id              String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  quizId          String        @db.Uuid
+  text            String
+  type            question_type @default(MULTIPLE_CHOICE)
+  trueFalseAnswer Boolean?
+  points          Int           @default(1)
 
   Quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
 

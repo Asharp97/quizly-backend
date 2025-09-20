@@ -2,10 +2,15 @@ import { Prisma } from '@prisma/client';
 import { Quiz } from 'types/quiz/quiz.model';
 import { QuizRepository } from './quiz.repository';
 import { Injectable } from '@nestjs/common';
+import { UserService } from 'src/user/user.service';
+import { genLink } from 'src/common/utils/genLink';
 
 @Injectable()
 export class QuizService {
-  constructor(private repo: QuizRepository) {}
+  constructor(
+    private repo: QuizRepository,
+    private userService: UserService,
+  ) {}
   async getQuizzes(params: {
     skip?: number;
     take?: number;
@@ -30,9 +35,19 @@ export class QuizService {
     return await this.repo.updateQuiz({ where: { id }, data });
   }
 
-  async createQuiz(data: Prisma.QuizUncheckedCreateInput): Promise<Quiz> {
-    data.link = Math.random().toString(36).substring(2, 8).toLowerCase();
-    const quiz = await this.repo.createQuiz(data);
+  async createQuiz(data: Prisma.QuizCreateInput, token: string): Promise<Quiz> {
+    const userId = this.userService.getUserIdFromToken(token);
+    if (!userId) {
+      throw new Error('Invalid token');
+    }
+    data.link = genLink();
+
+    const payload = {
+      ...data,
+      User: { connect: { id: userId } },
+    };
+
+    const quiz = await this.repo.createQuiz(payload);
     return quiz;
   }
 }

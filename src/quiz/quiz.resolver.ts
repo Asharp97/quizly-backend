@@ -1,11 +1,14 @@
-import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
+import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
 import { QuizService } from './quiz.service';
 import { Quiz } from 'types/quiz/quiz.model';
 import { Prisma } from '@prisma/client';
 import { QuizWhereInput } from 'types/quiz/quiz-where.input';
 import { QuizUpdateInput } from 'types/quiz/quiz-update.input';
-import { QuizUncheckedCreateInput } from 'types/quiz/quiz-unchecked-create.input';
 import { QuizOrderByWithRelationInput } from 'types/quiz/quiz-order-by-with-relation.input';
+import { CreateQuizInput } from './dto/create-quiz.input';
+import type { GqlContext } from 'src/common/types/gql-context.type';
+import extractTokenFromHeader from 'src/common/utils/extractTokenFromHeader';
+import { Request } from 'express';
 
 @Resolver()
 export class QuizResolver {
@@ -51,9 +54,15 @@ export class QuizResolver {
 
   @Mutation(() => Quiz, { name: 'CreateQuiz' })
   async createQuiz(
-    @Args('data', { type: () => QuizUncheckedCreateInput })
-    data: Prisma.QuizUncheckedCreateInput,
+    @Args('data', { type: () => CreateQuizInput })
+    data: Prisma.QuizCreateInput,
+    @Context() { req }: GqlContext,
   ): Promise<Quiz> {
-    return await this.quizService.createQuiz(data);
+    const token = extractTokenFromHeader(req);
+    if (!token) {
+      throw new Error('No token provided');
+    }
+
+    return await this.quizService.createQuiz(data, token);
   }
 }
