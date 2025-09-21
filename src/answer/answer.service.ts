@@ -34,4 +34,11 @@ export class AnswerService {
     const answer = await this.repo.createAnswer(data);
     return answer;
   }
+
+  async createAnswers(
+    data: Prisma.AnswerUncheckedCreateInput[],
+  ): Promise<Prisma.BatchPayload> {
+    const answers = await this.repo.createAnswers(data);
+    return answers;
+  }
 }

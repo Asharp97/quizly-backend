@@ -1,4 +1,4 @@
-import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
+import { Resolver, Query, Args, Mutation, Int } from '@nestjs/graphql';
 import { AnswerService } from './answer.service';
 import { Answer } from 'types/answer/answer.model';
 import { Prisma } from '@prisma/client';
@@ -55,5 +55,14 @@ export class AnswerResolver {
     data: Prisma.AnswerUncheckedCreateInput,
   ): Promise<Answer> {
     return await this.answerService.createAnswer(data);
+  }
+
+  @Mutation(() => Int, { name: 'CreateAnswers' })
+  async createAnswers(
+    @Args({ name: 'data', type: () => [AnswerUncheckedCreateInput] })
+    data: Prisma.AnswerUncheckedCreateInput[],
+  ): Promise<number> {
+    const result = await this.answerService.createAnswers(data);
+    return result.count;
   }
 }

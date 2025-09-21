@@ -37,4 +37,10 @@ export class AnswerRepository {
   createAnswer(data: Prisma.AnswerUncheckedCreateInput): Promise<Answer> {
     return this.prisma.answer.create({ data });
   }
+
+  createAnswers(
+    data: Prisma.AnswerUncheckedCreateInput[],
+  ): Promise<Prisma.BatchPayload> {
+    return this.prisma.answer.createMany({ data });
+  }
 }
