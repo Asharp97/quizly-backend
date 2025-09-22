@@ -39,4 +39,15 @@ export class QuestionRepository {
   createQuestion(data: Prisma.QuestionUncheckedCreateInput): Promise<Question> {
     return this.prisma.question.create({ data });
   }
+
+  updateMCQAnswers(
+    questionId: string,
+    answers: Prisma.AnswerCreateManyInput[],
+  ): Promise<number> {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.answer.deleteMany({ where: { questionId } });
+      const result = await tx.answer.createMany({ data: answers });
+      return result.count;
+    });
+  }
 }

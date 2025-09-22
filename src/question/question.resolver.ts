@@ -2,10 +2,12 @@ import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { QuestionService } from './question.service';
 import { Question } from 'types/question/question.model';
 import { Prisma } from '@prisma/client';
+import { AnswerCreateManyInput } from 'types/answer/answer-create-many.input';
 import { QuestionUpdateInput } from 'types/question/question-update.input';
 import { QuestionUncheckedCreateInput } from 'types/question/question-unchecked-create.input';
 import { QuestionOrderByWithRelationInput } from 'types/question/question-order-by-with-relation.input';
 import { QuestionWhereInput } from 'types/question/question-where.input';
+import { QuestionCreateInput } from 'types/question/question-create.input';
 
 @Resolver()
 export class QuestionResolver {
@@ -55,5 +57,20 @@ export class QuestionResolver {
     data: Prisma.QuestionUncheckedCreateInput,
   ): Promise<Question> {
     return await this.questionService.createQuestion(data);
+  }
+
+  @Mutation(() => Question, { name: 'UpdateQuestionWithAnswers' })
+  async updateQuestionWithAnswers(
+    @Args('questionId', { type: () => String }) questionId: string,
+    @Args('question', { type: () => QuestionCreateInput })
+    question: Prisma.QuestionUpdateInput,
+    @Args('answers', { type: () => [AnswerCreateManyInput] })
+    answers: AnswerCreateManyInput[],
+  ): Promise<Question | null> {
+    return await this.questionService.updateQuestionWithAnswers(
+      questionId,
+      question,
+      answers,
+    );
   }
 }

@@ -34,13 +34,19 @@ export class AnswerRepository {
     return this.prisma.answer.update(params);
   }
 
-  createAnswer(data: Prisma.AnswerUncheckedCreateInput): Promise<Answer> {
+  createAnswer(data: Prisma.AnswerCreateInput): Promise<Answer> {
     return this.prisma.answer.create({ data });
   }
 
   createAnswers(
-    data: Prisma.AnswerUncheckedCreateInput[],
+    data: Prisma.AnswerCreateManyInput[],
   ): Promise<Prisma.BatchPayload> {
     return this.prisma.answer.createMany({ data });
+  }
+
+  deleteAnswers(questionId: string): Promise<Prisma.BatchPayload> {
+    return this.prisma.answer.deleteMany({
+      where: { questionId },
+    });
   }
 }

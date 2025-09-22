@@ -30,15 +30,19 @@ export class AnswerService {
     return await this.repo.updateAnswer({ where: { id }, data });
   }
 
-  async createAnswer(data: Prisma.AnswerUncheckedCreateInput): Promise<Answer> {
+  async createAnswer(data: Prisma.AnswerCreateInput): Promise<Answer> {
     const answer = await this.repo.createAnswer(data);
     return answer;
   }
 
   async createAnswers(
-    data: Prisma.AnswerUncheckedCreateInput[],
+    data: Prisma.AnswerCreateManyInput[],
   ): Promise<Prisma.BatchPayload> {
     const answers = await this.repo.createAnswers(data);
     return answers;
+  }
+
+  async deleteAnswers(questionId: string): Promise<Prisma.BatchPayload> {
+    return await this.repo.deleteAnswers(questionId);
   }
 }

@@ -3,9 +3,9 @@ import { AnswerService } from './answer.service';
 import { Answer } from 'types/answer/answer.model';
 import { Prisma } from '@prisma/client';
 import { AnswerUpdateInput } from 'types/answer/answer-update.input';
-import { AnswerUncheckedCreateInput } from 'types/answer/answer-unchecked-create.input';
 import { AnswerOrderByWithRelationInput } from 'types/answer/answer-order-by-with-relation.input';
 import { AnswerWhereInput } from 'types/answer/answer-where.input';
+import { AnswerCreateInput } from 'types/answer/answer-create.input';
 
 @Resolver()
 export class AnswerResolver {
@@ -51,16 +51,16 @@ export class AnswerResolver {
 
   @Mutation(() => Answer, { name: 'CreateAnswer' })
   async createAnswer(
-    @Args('data', { type: () => AnswerUncheckedCreateInput })
-    data: Prisma.AnswerUncheckedCreateInput,
+    @Args('data', { type: () => AnswerCreateInput })
+    data: Prisma.AnswerCreateInput,
   ): Promise<Answer> {
     return await this.answerService.createAnswer(data);
   }
 
   @Mutation(() => Int, { name: 'CreateAnswers' })
   async createAnswers(
-    @Args({ name: 'data', type: () => [AnswerUncheckedCreateInput] })
-    data: Prisma.AnswerUncheckedCreateInput[],
+    @Args({ name: 'data', type: () => [AnswerCreateInput] })
+    data: Prisma.AnswerCreateManyInput[],
   ): Promise<number> {
     const result = await this.answerService.createAnswers(data);
     return result.count;

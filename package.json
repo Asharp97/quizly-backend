@@ -24,7 +24,8 @@
     "reset": "npx prisma migrate reset",
     "gen": "npx prisma generate",
     "op": "npx ts-node",
-    "sync": "npx prisma generate && npx prisma db push --force-reset && npx prisma db seed"
+    "sync": "npx prisma generate && npx prisma db push --force-reset && npx prisma db seed",
+    "lf": "prettier --end-of-line lf --write ."
   },
   "dependencies": {
     "@apollo/server": "^4.12.2",
