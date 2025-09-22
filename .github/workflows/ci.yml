@@ -17,14 +17,17 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Install pnpm
+        run: npm install -g pnpm
+
       - name: Install dependencies
-        run: npm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Run lint
-        run: npm run lint
+        run: pnpm run lint
 
       - name: Run tests
-        run: npm test
+        run: pnpm test
 
       - name: Run e2e tests
         run: pnpm run test:e2e
