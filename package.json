@@ -91,19 +91,19 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
+    "rootDir": ".",
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec|integration-spec))\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "src/**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
+    "coverageDirectory": "coverage",
     "testEnvironment": "node",
     "moduleNameMapper": {
-      "^src/(.*)$": "<rootDir>/$1",
-      "^types/(.*)$": "<rootDir>/../types/$1"
+      "^src/(.*)$": "<rootDir>/src/$1",
+      "^types/(.*)$": "<rootDir>/types/$1"
     }
   },
   "prisma": {
