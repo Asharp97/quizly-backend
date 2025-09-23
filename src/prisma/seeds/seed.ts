@@ -3,14 +3,17 @@ import { quizzes } from './data/quiz';
 import { PrismaClient } from '@prisma/client';
 import { questions } from './data/questions';
 import { answers } from './data/answers';
+import { answer_submissions } from './data/answer-submission';
+import { quiz_submissions } from './data/quiz-submission';
 import { genLink } from '../../common/utils/genLink';
 
 const prisma = new PrismaClient();
+const skipDuplicates = true;
 
 async function main() {
   await prisma.user.createMany({
     data: users,
-    skipDuplicates: true,
+    skipDuplicates,
   });
 
   await prisma.quiz.createMany({
@@ -18,15 +21,23 @@ async function main() {
       ...quiz,
       link: genLink(),
     })),
-    skipDuplicates: true,
+    skipDuplicates,
   });
   await prisma.question.createMany({
     data: questions,
-    skipDuplicates: true,
+    skipDuplicates,
   });
   await prisma.answer.createMany({
     data: answers,
-    skipDuplicates: true,
+    skipDuplicates,
+  });
+  await prisma.quizSubmission.createMany({
+    data: quiz_submissions,
+    skipDuplicates,
+  });
+  await prisma.answerSubmission.createMany({
+    data: answer_submissions,
+    skipDuplicates,
   });
 }
 

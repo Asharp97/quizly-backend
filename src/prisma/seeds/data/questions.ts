@@ -1,46 +1,50 @@
-import { quizId } from './quiz';
+import { v4 as uuid } from 'uuid';
+import { quizIds } from './quiz';
 import { question_type } from '@prisma/client';
-const questionId = [
-  '84f2dca2-65c8-4316-ab7a-6fdf0d8794ca',
-  'e4ca82ce-fc3f-4067-9255-8ec161bce511',
-  '0eb1007e-cab5-4b7f-9cf2-5b85bdfdd78c',
-  '6db73a31-d43a-4ca1-a4b3-506c93f9576c',
-  '96ffb36c-6a11-444b-ae7a-29c8d5f6c280',
-];
+
+const questionCount = 20;
+const questionIds = [...Array.from({ length: questionCount }, () => uuid())];
 
 const questions = [
   {
-    id: questionId[0],
+    id: questionIds[0],
     text: 'What is the chemical symbol for water?',
     type: question_type.MULTIPLE_CHOICE,
-    quizId: quizId[0],
+    quizId: quizIds[0],
   },
   {
-    id: questionId[3],
+    id: questionIds[1],
     text: 'What is the chemical symbol for Baron?',
     type: question_type.MULTIPLE_CHOICE,
-    quizId: quizId[0],
+    quizId: quizIds[0],
   },
   {
-    id: questionId[4],
+    id: questionIds[2],
     text: 'What is the chemical symbol for Zinc?',
     type: question_type.MULTIPLE_CHOICE,
-    quizId: quizId[0],
+    quizId: quizIds[0],
   },
-
   {
-    id: questionId[1],
+    id: questionIds[3],
     text: 'What is the speed of light in a vacuum?',
     type: question_type.SHORT_ANSWER,
-    quizId: quizId[1],
+    quizId: quizIds[1],
   },
   {
-    id: questionId[2],
+    id: questionIds[4],
     text: 'Is the Earth flat?',
     type: question_type.TRUE_FALSE,
     trueFalseAnswer: false,
-    quizId: quizId[2],
+    quizId: quizIds[2],
   },
+  ...Array.from({ length: questionCount - 5 }, (_, i) => ({
+    id: questionIds[i + 5],
+    text: `Auto-generated question ${Math.floor(Math.random() * 10000)}`,
+    type: Object.values(question_type)[
+      Math.floor(Math.random() * Object.values(question_type).length)
+    ],
+    quizId: quizIds[(i + 3) % quizIds.length],
+  })),
 ];
 
-export { questionId, questions };
+export { questionIds, questions };

@@ -25,6 +25,7 @@
     "gen": "npx prisma generate",
     "op": "npx ts-node",
     "sync": "npx prisma generate && npx prisma db push --force-reset && npx prisma db seed",
+    "seed-reset": "npx prisma db push --force-reset && npx prisma db seed",
     "lf": "prettier --end-of-line lf --write ."
   },
   "dependencies": {
