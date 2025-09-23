@@ -9,6 +9,8 @@ import { CreateQuizInput } from './dto/create-quiz.input';
 import type { GqlContext } from 'src/common/types/gql-context.type';
 import extractTokenFromHeader from 'src/common/utils/extractTokenFromHeader';
 import { Request } from 'express';
+import { QuizWhereUniqueInput } from 'types/quiz/quiz-where-unique.input';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @Resolver()
 export class QuizResolver {
@@ -31,9 +33,10 @@ export class QuizResolver {
 
   @Query(() => Quiz, { name: 'GetQuiz' })
   async getQuiz(
-    @Args('id', { type: () => String }) id: string,
+    @Args('where', { type: () => QuizWhereUniqueInput })
+    where: Prisma.QuizWhereUniqueInput,
   ): Promise<Quiz | null> {
-    return this.quizService.getQuiz(id);
+    return this.quizService.getQuiz({ where });
   }
 
   @Mutation(() => Quiz, { name: 'DeleteQuiz' })
@@ -64,5 +67,13 @@ export class QuizResolver {
     }
 
     return await this.quizService.createQuiz(data, token);
+  }
+
+  @Public()
+  @Query(() => Quiz, { name: 'VerifyQuizLink' })
+  async verifyQuizLink(
+    @Args('link', { type: () => String }) link: string,
+  ): Promise<Quiz | null> {
+    return await this.quizService.verifyQuizLink(link);
   }
 }

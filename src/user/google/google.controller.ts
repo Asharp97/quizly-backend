@@ -21,9 +21,9 @@ export class GoogleController {
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: { user: User }, @Res() res: Response) {
     const tokens = await this.userService.googleAuth(req.user);
-    if (tokens) {
+    if (tokens?.accessToken && tokens?.refreshToken) {
       res.redirect(
-        `${process.env.DOMAIN}/dashboard?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
+        `${process.env.DOMAIN}?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
       );
     } else {
       res.redirect(`${process.env.DOMAIN}/login?error=auth_failed`);

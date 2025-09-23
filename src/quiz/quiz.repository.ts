@@ -16,8 +16,10 @@ export class QuizRepository {
     return this.prisma.quiz.findMany(params);
   }
 
-  getQuiz(id: string): Promise<Quiz | null> {
-    return this.prisma.quiz.findUnique({ where: { id } });
+  getQuiz(params: {
+    where: Prisma.QuizWhereUniqueInput;
+  }): Promise<Quiz | null> {
+    return this.prisma.quiz.findUnique(params);
   }
 
   deleteQuiz(id: string): Promise<Quiz | null> {

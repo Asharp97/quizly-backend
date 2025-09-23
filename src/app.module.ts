@@ -13,6 +13,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { QuizModule } from './quiz/quiz.module';
 import { QuestionModule } from './question/question.module';
 import { AnswerModule } from './answer/answer.module';
+import { AnswerSubmissionModule } from './answer-submission copy/answre-submission.module';
+import { QuizSubmissionModule } from './quiz-submission/quiz-submission.module';
 
 @Module({
   imports: [
@@ -59,6 +61,8 @@ import { AnswerModule } from './answer/answer.module';
     QuizModule,
     QuestionModule,
     AnswerModule,
+    AnswerSubmissionModule,
+    QuizSubmissionModule,
   ],
   controllers: [AppController],
   providers: [

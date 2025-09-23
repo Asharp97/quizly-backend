@@ -20,8 +20,10 @@ export class QuizService {
     return await this.repo.getQuizzes(params);
   }
 
-  async getQuiz(id: string): Promise<Quiz | null> {
-    return await this.repo.getQuiz(id);
+  async getQuiz(params: {
+    where: Prisma.QuizWhereUniqueInput;
+  }): Promise<Quiz | null> {
+    return await this.repo.getQuiz(params);
   }
 
   async deleteQuiz(id: string): Promise<Quiz | null> {
@@ -48,6 +50,20 @@ export class QuizService {
     };
 
     const quiz = await this.repo.createQuiz(payload);
+    return quiz;
+  }
+  async verifyQuizLink(link: string): Promise<Quiz | null> {
+    const quiz = await this.repo.getQuiz({
+      where: {
+        link,
+        deletedAt: null,
+        publishedAt: { lte: new Date() },
+        OR: [{ deadline: null }, { deadline: { gt: new Date() } }],
+      },
+    });
+    if (!quiz) {
+      throw new Error('Quiz not found or not accessible');
+    }
     return quiz;
   }
 }

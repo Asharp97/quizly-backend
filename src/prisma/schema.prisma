@@ -25,6 +25,7 @@ model User {
   /// @HideField()
   password String
   role     user_role @default(USER)
+  name     String?
 
   createdAt      DateTime         @default(now()) @db.Timestamptz
   updatedAt      DateTime         @updatedAt @db.Timestamptz
@@ -98,12 +99,12 @@ model Answer {
 }
 
 model QuizSubmission {
-  id        String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  quizId    String @db.Uuid
-  userId    String @db.Uuid
-  score     Float
-  total     Float
-  timeTaken Int // in seconds
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  quizId      String    @db.Uuid
+  userId      String    @db.Uuid
+  score       Float?
+  timeTaken   Int? // seconds
+  submittedAt DateTime? @db.Timestamptz
 
   Quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
   User User @relation(fields: [userId], references: [id], onDelete: Cascade)
