@@ -2,7 +2,7 @@ import { userIds } from './user';
 import { quizIds } from './quiz';
 import { v4 as uuid } from 'uuid';
 
-const quiz_submissionsCount = 20;
+const quiz_submissionsCount = 50;
 const quiz_submissions_ids = [
   ...Array.from({ length: quiz_submissionsCount }, () => uuid()),
 ];

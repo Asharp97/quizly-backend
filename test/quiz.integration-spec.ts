@@ -68,7 +68,7 @@ describe('QuizService Integration', () => {
     expect(createdQuiz.title).toBe('Integration Test Quiz');
     testQuizId = createdQuiz.id;
 
-    const fetchedQuiz = await service.getQuiz(testQuizId);
+    const fetchedQuiz = await service.getQuiz({ where: { id: testQuizId } });
     expect(fetchedQuiz).not.toBeNull();
     expect(fetchedQuiz?.title).toBe('Integration Test Quiz');
   });

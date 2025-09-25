@@ -19,6 +19,12 @@ export class QuizSubmissionService {
     return await this.repo.getQuizSubmissions(params);
   }
 
+  async getQuizSubmissionsCount(params: {
+    where?: Prisma.QuizSubmissionWhereInput;
+  }): Promise<number> {
+    return await this.repo.getQuizSubmissionsCount(params);
+  }
+
   async getQuizSubmission(id: string): Promise<QuizSubmission | null> {
     return await this.repo.getQuizSubmission(id);
   }

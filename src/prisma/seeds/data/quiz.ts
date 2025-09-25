@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { userIds } from './user';
 
-const quizCount = 10;
+const quizCount = 5;
 const quizIds = [...Array.from({ length: quizCount }, () => uuid())];
 
 const quizzes = [
@@ -28,7 +28,8 @@ const quizzes = [
     id: quizIds[i + 3],
     title: `Quiz ${Math.floor(Math.random() * 10000)}`,
     description: 'Auto-generated quiz description.',
-    userId: userIds[(i + 3) % userIds.length],
+    // userId: userIds[(i + 3) % userIds.length],
+    userId: userIds[0],
   })),
 ];
 

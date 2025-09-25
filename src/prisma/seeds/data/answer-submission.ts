@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 import { questionIds } from './questions';
 import { answerIds } from './answers';
 
-const answer_submissionsCount = 50;
+const answer_submissionsCount = 100;
 const answer_submissions_ids = [
   ...Array.from({ length: answer_submissionsCount }, () => uuid()),
 ];

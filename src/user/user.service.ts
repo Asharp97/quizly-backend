@@ -57,7 +57,7 @@ export class UserService {
     if (existingUser) {
       throw new Error('User with this email already exists');
     }
-    data.password = await hash(data.password, 10);
+    data.password = await hash(data.password, 14);
     const user = await this.repo.createUser(data);
     if (!user) {
       throw new Error('Failed to create user');

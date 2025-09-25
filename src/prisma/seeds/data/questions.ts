@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 import { quizIds } from './quiz';
 import { question_type } from '@prisma/client';
 
-const questionCount = 20;
+const questionCount = 30;
 const questionIds = [...Array.from({ length: questionCount }, () => uuid())];
 
 const questions = [
@@ -43,7 +43,7 @@ const questions = [
     type: Object.values(question_type)[
       Math.floor(Math.random() * Object.values(question_type).length)
     ],
-    quizId: quizIds[(i + 3) % quizIds.length],
+    quizId: quizIds[((i + 3) % (quizIds.length - 3)) + 3],
   })),
 ];
 

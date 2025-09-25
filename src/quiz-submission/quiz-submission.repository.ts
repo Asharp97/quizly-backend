@@ -14,6 +14,12 @@ export class QuizSubmissionRepository {
     return this.prisma.quizSubmission.findMany(params);
   }
 
+  getQuizSubmissionsCount(params: {
+    where?: Prisma.QuizSubmissionWhereInput;
+  }): Promise<number> {
+    return this.prisma.quizSubmission.count(params);
+  }
+
   getQuizSubmission(id: string): Promise<QuizSubmission | null> {
     return this.prisma.quizSubmission.findUnique({ where: { id } });
   }

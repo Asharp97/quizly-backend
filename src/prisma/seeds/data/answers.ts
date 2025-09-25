@@ -19,16 +19,16 @@ const sampleAnswers = [
 const answers = [
   // Sample answers for first few questions
   ...sampleAnswers.map((ans, i) => ({
-    ...ans,
-    questionId: questionIds[i % questionIds.length],
     id: answerIds[i],
+    questionId: questionIds[Math.floor(i / 3)],
+    ...ans,
   })),
   // Auto-generated answers for all questions
   ...Array.from({ length: answerCount - sampleAnswers.length }, (_, i) => ({
     id: answerIds[i + sampleAnswers.length],
     text: `Auto-answer ${Math.floor(Math.random() * 10000)}`,
     isCorrect: Math.random() < 0.25,
-    questionId: questionIds[i % questionIds.length],
+    questionId: questionIds[((i + 4) % (questionIds.length - 3)) + 3],
   })),
 ];
 export { answerIds, answers };

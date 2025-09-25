@@ -33,6 +33,14 @@ export class QuizSubmissionResolver {
     });
   }
 
+  @Query(() => Number, { name: 'GetQuizSubmissionsCount' })
+  async getQuizSubmissionsCount(
+    @Args('where', { type: () => QuizSubmissionWhereInput, nullable: true })
+    where?: QuizSubmissionWhereInput,
+  ): Promise<number> {
+    return this.quizSubmissionService.getQuizSubmissionsCount({ where });
+  }
+
   @Query(() => QuizSubmission, { name: 'GetQuizSubmission' })
   async getQuizSubmission(
     @Args('id', { type: () => String }) id: string,
