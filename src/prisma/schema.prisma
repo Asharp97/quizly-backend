@@ -56,6 +56,8 @@ model Quiz {
   Question       Question[]
   QuizSubmission QuizSubmission[]
   User           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 enum question_type {
@@ -80,6 +82,8 @@ model Question {
   deletedAt        DateTime?          @db.Timestamptz
   answer           Answer[]
   AnswerSubmission AnswerSubmission[]
+
+  @@index([quizId])
 }
 
 model Answer {
@@ -96,6 +100,7 @@ model Answer {
   AnswerSubmission AnswerSubmission[]
 
   @@unique([questionId, text])
+  @@index([questionId])
 }
 
 model QuizSubmission {
@@ -113,6 +118,8 @@ model QuizSubmission {
   updatedAt        DateTime           @updatedAt @db.Timestamptz
   deletedAt        DateTime?          @db.Timestamptz
   AnswerSubmission AnswerSubmission[]
+
+  @@index([quizId, userId])
 }
 
 model AnswerSubmission {
