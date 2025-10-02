@@ -15,6 +15,7 @@ import { QuestionModule } from './question/question.module';
 import { AnswerModule } from './answer/answer.module';
 import { AnswerSubmissionModule } from './answer-submission copy/answre-submission.module';
 import { QuizSubmissionModule } from './quiz-submission/quiz-submission.module';
+import { KafkaModule } from './kafka/kafka.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { QuizSubmissionModule } from './quiz-submission/quiz-submission.module';
     AnswerModule,
     AnswerSubmissionModule,
     QuizSubmissionModule,
+    KafkaModule,
   ],
   controllers: [AppController],
   providers: [
