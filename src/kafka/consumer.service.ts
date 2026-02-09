@@ -1,4 +1,4 @@
-import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { Injectable, OnApplicationShutdown, Logger } from '@nestjs/common';
 import {
   Consumer,
   ConsumerRunConfig,
@@ -8,21 +8,42 @@ import {
 
 @Injectable()
 export class ConsumerService implements OnApplicationShutdown {
+  private readonly logger = new Logger(ConsumerService.name);
   private readonly kafka = new Kafka({
-    brokers: ['kafka:9092'],
+    clientId: 'my-app',
+    brokers: [process.env.KAFKA_BROKERS || 'localhost:9092'],
   });
-  private readonly consumer: Consumer[] = [];
+  private readonly consumers: Consumer[] = [];
+  private healthController: any; // Will be injected via setter
+  private quizScoringService: any; // Will be injected via setter
 
-  async consume(topic: ConsumerSubscribeTopics, config: ConsumerRunConfig) {
-    const consumer = this.kafka.consumer({ groupId: `quizly` });
+  async consume(
+    topic: ConsumerSubscribeTopics,
+    config: ConsumerRunConfig,
+    groupIdSuffix?: string,
+  ) {
+    const groupId = `quizly-${groupIdSuffix || topic.topics[0]}`;
+    const consumer = this.kafka.consumer({ groupId });
     await consumer.connect();
     await consumer.subscribe(topic);
     await consumer.run(config);
-    this.consumer.push(consumer);
+    this.consumers.push(consumer);
+    this.logger.log(
+      `Consumer started for topic ${topic.topics.join(', ')} with group ${groupId}`,
+    );
+  }
+
+  // Setter for circular dependency
+  setHealthController(controller: any): void {
+    this.healthController = controller;
+  }
+
+  setQuizScoringService(service: any): void {
+    this.quizScoringService = service;
   }
 
   async onApplicationShutdown() {
-    for (const consumer of this.consumer) {
+    for (const consumer of this.consumers) {
       await consumer.disconnect();
     }
   }

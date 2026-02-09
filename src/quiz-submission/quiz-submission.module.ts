@@ -5,6 +5,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { QuizSubmissionRepository } from './quiz-submission.repository';
 import { QuizSubmissionResolver } from './quiz-submission.resolver';
 import { UserModule } from 'src/user/user.module';
+import { KafkaModule } from 'src/kafka/kafka.module';
 
 @Module({
   providers: [
@@ -13,6 +14,6 @@ import { UserModule } from 'src/user/user.module';
     QuizSubmissionService,
   ],
   exports: [QuizSubmissionService],
-  imports: [PrismaModule, ConfigModule, UserModule],
+  imports: [PrismaModule, ConfigModule, UserModule, KafkaModule],
 })
 export class QuizSubmissionModule {}
