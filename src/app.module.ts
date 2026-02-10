@@ -16,6 +16,8 @@ import { AnswerModule } from './answer/answer.module';
 import { AnswerSubmissionModule } from './answer-submission copy/answre-submission.module';
 import { QuizSubmissionModule } from './quiz-submission/quiz-submission.module';
 import { KafkaModule } from './kafka/kafka.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import { redisStore } from 'cache-manager-redis-yet';
 
 @Module({
   imports: [
@@ -65,6 +67,29 @@ import { KafkaModule } from './kafka/kafka.module';
     AnswerSubmissionModule,
     QuizSubmissionModule,
     KafkaModule,
+    CacheModule.registerAsync({
+      isGlobal: true,
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => {
+        const host = configService.get<string>('API_REDIS_HOST') || '127.0.0.1';
+        const port = configService.get<number>('API_REDIS_PORT') || 6379;
+        const username = configService.get<string>('API_REDIS_USERNAME');
+        const password = configService.get<string>('API_REDIS_PASSWORD');
+
+        return {
+          store: await redisStore({
+            socket: {
+              host,
+              port: Number(port),
+            },
+            username: username || undefined,
+            password: password || undefined,
+          }),
+          ttl: 300,
+          max: 100,
+        };
+      },
+    }),
   ],
   controllers: [AppController],
   providers: [

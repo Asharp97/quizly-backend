@@ -4,6 +4,7 @@ import { UserRepository } from '../user.repository';
 import { JwtService } from '@nestjs/jwt';
 import { RedisService } from '@liaoliaots/nestjs-redis';
 import { signUpRequestDTO } from '../dto/signupRequest.dto';
+import * as bcryptjs from 'bcryptjs';
 
 // Mock dependencies
 const mockUserRepository = {
@@ -28,6 +29,9 @@ const mockRedis = {
 const mockRedisService = {
   getOrThrow: jest.fn(() => mockRedis),
 };
+
+// Mock bcryptjs module
+jest.mock('bcryptjs');
 
 describe('UserService', () => {
   let service: UserService;
@@ -107,7 +111,7 @@ describe('UserService', () => {
         email: 'test@test.com',
         password: 'hashed',
       });
-      jest.spyOn(require('bcryptjs'), 'compare').mockResolvedValue(false);
+      (bcryptjs.compare as jest.Mock).mockResolvedValue(false);
       await expect(service.login('test@test.com', 'wrong')).rejects.toThrow(
         'Invalid credentials',
       );
@@ -118,7 +122,7 @@ describe('UserService', () => {
         email: 'test@test.com',
         password: 'hashed',
       });
-      jest.spyOn(require('bcryptjs'), 'compare').mockResolvedValue(true);
+      (bcryptjs.compare as jest.Mock).mockResolvedValue(true);
       mockJwtService.sign.mockReturnValue('token');
       const result = await service.login('test@test.com', 'pass');
       expect(result.accessToken).toBe('token');

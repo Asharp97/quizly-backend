@@ -4,7 +4,7 @@ export async function processQuizSubmission(consumerService: ConsumerService) {
   await consumerService.consume(
     { topics: ['quiz.scored'] },
     {
-      eachMessage: async ({ topic, partition, message }) => {
+      eachMessage: async ({ message }) => {
         const event = JSON.parse(message.value?.toString() || '{}');
 
         console.log(

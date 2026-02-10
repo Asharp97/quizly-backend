@@ -2,10 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { QuizService } from '../quiz.service';
 import { QuizRepository } from '../quiz.repository';
 import { UserService } from 'src/user/user.service';
-import { genLink } from 'src/common/utils/genLink';
 import { Prisma } from '@prisma/client';
 
-jest.mock('src/common/utils/genLink', () => ({ genLink: jest.fn(() => 'mocked-link') }));
+jest.mock('src/common/utils/genLink', () => ({
+  genLink: jest.fn(() => 'mocked-link'),
+}));
 
 const mockQuizRepository = {
   getQuizzes: jest.fn(),
@@ -40,7 +41,9 @@ describe('QuizService', () => {
 
   describe('getQuizzes', () => {
     it('should return quizzes', async () => {
-      mockQuizRepository.getQuizzes.mockResolvedValue([{ id: '1', title: 'Quiz 1' }]);
+      mockQuizRepository.getQuizzes.mockResolvedValue([
+        { id: '1', title: 'Quiz 1' },
+      ]);
       const quizzes = await service.getQuizzes({});
       expect(quizzes).toEqual([{ id: '1', title: 'Quiz 1' }]);
     });
@@ -48,7 +51,10 @@ describe('QuizService', () => {
 
   describe('getQuiz', () => {
     it('should return a quiz', async () => {
-      mockQuizRepository.getQuiz.mockResolvedValue({ id: '1', title: 'Quiz 1' });
+      mockQuizRepository.getQuiz.mockResolvedValue({
+        id: '1',
+        title: 'Quiz 1',
+      });
       const quiz = await service.getQuiz('1');
       expect(quiz).toEqual({ id: '1', title: 'Quiz 1' });
     });
@@ -56,7 +62,11 @@ describe('QuizService', () => {
 
   describe('deleteQuiz', () => {
     it('should delete and return quiz', async () => {
-      mockQuizRepository.deleteQuiz.mockResolvedValue({ id: '1', title: 'Quiz 1', deletedAt: new Date() });
+      mockQuizRepository.deleteQuiz.mockResolvedValue({
+        id: '1',
+        title: 'Quiz 1',
+        deletedAt: new Date(),
+      });
       const quiz = await service.deleteQuiz('1');
       expect(quiz).toHaveProperty('deletedAt');
     });
@@ -64,8 +74,13 @@ describe('QuizService', () => {
 
   describe('updateQuiz', () => {
     it('should update and return quiz', async () => {
-      mockQuizRepository.updateQuiz.mockResolvedValue({ id: '1', title: 'Updated Quiz' });
-      const quiz = await service.updateQuiz('1', { title: 'Updated Quiz' } as Prisma.QuizUpdateInput);
+      mockQuizRepository.updateQuiz.mockResolvedValue({
+        id: '1',
+        title: 'Updated Quiz',
+      });
+      const quiz = await service.updateQuiz('1', {
+        title: 'Updated Quiz',
+      } as Prisma.QuizUpdateInput);
       expect(quiz).toEqual({ id: '1', title: 'Updated Quiz' });
     });
   });
@@ -73,12 +88,24 @@ describe('QuizService', () => {
   describe('createQuiz', () => {
     it('should throw if token is invalid', async () => {
       mockUserService.getUserIdFromToken.mockReturnValue(null);
-      await expect(service.createQuiz({ title: 'Quiz' } as Prisma.QuizCreateInput, 'badtoken')).rejects.toThrow('Invalid token');
+      await expect(
+        service.createQuiz(
+          { title: 'Quiz' } as Prisma.QuizCreateInput,
+          'badtoken',
+        ),
+      ).rejects.toThrow('Invalid token');
     });
     it('should create quiz and connect user', async () => {
       mockUserService.getUserIdFromToken.mockReturnValue('user-1');
-      mockQuizRepository.createQuiz.mockResolvedValue({ id: '1', title: 'Quiz', link: 'mocked-link' });
-      const result = await service.createQuiz({ title: 'Quiz' } as Prisma.QuizCreateInput, 'token');
+      mockQuizRepository.createQuiz.mockResolvedValue({
+        id: '1',
+        title: 'Quiz',
+        link: 'mocked-link',
+      });
+      const result = await service.createQuiz(
+        { title: 'Quiz' } as Prisma.QuizCreateInput,
+        'token',
+      );
       expect(result).toEqual({ id: '1', title: 'Quiz', link: 'mocked-link' });
       expect(mockQuizRepository.createQuiz).toHaveBeenCalledWith({
         title: 'Quiz',

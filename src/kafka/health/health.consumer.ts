@@ -12,7 +12,7 @@ export async function setupKafkaConsumers(
   await consumerService.consume(
     { topics: ['health.ping'] },
     {
-      eachMessage: async ({ topic, partition, message }) => {
+      eachMessage: async ({ message }) => {
         const event: HealthPingEvent = JSON.parse(
           message.value?.toString() || '{}',
         );
@@ -47,7 +47,7 @@ export async function setupKafkaConsumers(
   await consumerService.consume(
     { topics: ['health.pong'] },
     {
-      eachMessage: async ({ topic, partition, message }) => {
+      eachMessage: async ({ message }) => {
         const event: HealthPongEvent = JSON.parse(
           message.value?.toString() || '{}',
         );

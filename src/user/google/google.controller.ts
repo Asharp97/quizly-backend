@@ -12,7 +12,7 @@ export class GoogleController {
   @Public()
   @Get()
   @UseGuards(AuthGuard('google'))
-  async googleAuth(@Req() req) {
+  async googleAuth() {
     // This route will redirect to Google's login page
   }
 

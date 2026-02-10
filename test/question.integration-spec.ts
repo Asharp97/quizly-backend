@@ -6,6 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { AnswerModule } from 'src/answer/answer.module';
 import { JwtModule } from '@nestjs/jwt';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
+import { QuestionUncheckedCreateInput } from 'types/question/question-unchecked-create.input';
 
 // Helper to create a test user and return its id
 async function createTestUser(prisma: PrismaService): Promise<string> {
@@ -82,7 +83,9 @@ describe('QuestionService Integration', () => {
       type: 'MULTIPLE_CHOICE',
       points: 5,
     };
-    const createdQuestion = await service.createQuestion(questionData as any);
+    const createdQuestion = await service.createQuestion(
+      questionData as QuestionUncheckedCreateInput,
+    );
     expect(createdQuestion.text).toBe('Integration Test Question');
     testQuestionId = createdQuestion.id;
 
