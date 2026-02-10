@@ -24,10 +24,7 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Generate Prisma Client  # Add this
-        run: pnpm prisma generate
-
-      - name: Generate GraphQL Types  # Add this
-        run: pnpm run generate:types  # or whatever your script is called
+        run: pnpm prisma sync
 
       - name: Run lint
         run: pnpm run lint
