@@ -5,6 +5,7 @@ import {
   QuizScoredEvent,
   QuizSubmittedEvent,
 } from '../kafka/events/quiz-submission.event';
+import { processingStatus } from 'types/prisma/processing-status.enum';
 
 @Injectable()
 export class QuizScoringService {
@@ -16,9 +17,28 @@ export class QuizScoringService {
   ) {}
 
   async processQuizSubmission(event: QuizSubmittedEvent): Promise<void> {
-    this.logger.log(
-      `Processing quiz submission: ${event.quizSubmissionId} for quiz ${event.quizId}`,
-    );
+    // Check if already processed
+    const existing = await this.prisma.quizSubmission.findUnique({
+      where: { id: event.quizSubmissionId },
+      select: { processingStatus: true },
+    });
+
+    if (existing?.processingStatus === processingStatus.SCORED) {
+      this.logger.log(`Already processed: ${event.quizSubmissionId}`);
+      return; // Skip reprocessing
+    }
+
+    const updated = await this.prisma.quizSubmission.updateMany({
+      where: {
+        id: event.quizSubmissionId,
+        processingStatus: { not: processingStatus.SCORED },
+      },
+      data: {
+        processingStatus: processingStatus.PROCESSING,
+      },
+    });
+
+    if (updated.count === 0) return; // Another worker got it first
 
     try {
       // Fetch the submission with all answer submissions
@@ -102,6 +122,8 @@ export class QuizScoringService {
         data: {
           score: percentage,
           submittedAt: new Date(event.submittedAt),
+          processingStatus: processingStatus.SCORED,
+          processedAt: new Date(),
         },
       });
 

@@ -98,7 +98,9 @@ export class UserService {
 
       return { success: true, message: 'Logout successful' };
     } catch (error) {
-      console.error('Logout failed:', error.message);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      console.error('Logout failed:', errorMessage);
       return { success: false, message: 'Logout failed' };
     }
   }
@@ -231,7 +233,9 @@ export class UserService {
       }
       return await this.repo.getUser(userId);
     } catch (error) {
-      console.error('Error getting user from token:', error.message);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      console.error('Error getting user from token:', errorMessage);
       return null;
     }
   }

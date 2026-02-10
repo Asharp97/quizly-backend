@@ -19,6 +19,12 @@ enum user_role {
   ADMIN
 }
 
+enum processingStatus {
+  PENDING
+  PROCESSING
+  SCORED
+}
+
 model User {
   id       String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   email    String    @unique
@@ -104,12 +110,14 @@ model Answer {
 }
 
 model QuizSubmission {
-  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  quizId      String    @db.Uuid
-  userId      String    @db.Uuid
-  score       Float?
-  timeTaken   Int? // seconds
-  submittedAt DateTime? @db.Timestamptz
+  id               String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  quizId           String            @db.Uuid
+  userId           String            @db.Uuid
+  score            Float?
+  timeTaken        Int? // seconds
+  submittedAt      DateTime?         @db.Timestamptz
+  idempotencyKey   String?           @db.Uuid
+  processingStatus processingStatus?
 
   Quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
   User User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -117,9 +125,10 @@ model QuizSubmission {
   createdAt        DateTime           @default(now()) @db.Timestamptz
   updatedAt        DateTime           @updatedAt @db.Timestamptz
   deletedAt        DateTime?          @db.Timestamptz
+  processedAt      DateTime?          @db.Timestamptz
   AnswerSubmission AnswerSubmission[]
 
-  @@index([quizId, userId])
+  @@index([quizId, userId, idempotencyKey])
 }
 
 model AnswerSubmission {

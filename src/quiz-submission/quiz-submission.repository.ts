@@ -24,6 +24,14 @@ export class QuizSubmissionRepository {
     return this.prisma.quizSubmission.findUnique({ where: { id } });
   }
 
+  getQuizSubmissionByIdempotencyKey(
+    idempotencyKey: string,
+  ): Promise<QuizSubmission | null> {
+    return this.prisma.quizSubmission.findFirst({
+      where: { idempotencyKey },
+    });
+  }
+
   deleteQuizSubmission(id: string): Promise<QuizSubmission | null> {
     return this.prisma.quizSubmission.update({
       where: { id },

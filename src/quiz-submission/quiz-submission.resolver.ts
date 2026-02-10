@@ -1,4 +1,7 @@
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
+import { Inject } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { QuizSubmissionService } from './quiz-submission.service';
 import { QuizSubmission } from 'types/quiz-submission/quiz-submission.model';
 import { Prisma } from '@prisma/client';
@@ -8,10 +11,14 @@ import { QuizSubmissionWhereInput } from 'types/quiz-submission/quiz-submission-
 import type { GqlContext } from 'src/common/types/gql-context.type';
 import extractTokenFromHeader from 'src/common/utils/extractTokenFromHeader';
 import { CreateQuizSubmissionInput } from './dto/create-quiz-submission.input';
+import { v4 as uuidv4 } from 'uuid';
 
 @Resolver()
 export class QuizSubmissionResolver {
-  constructor(private readonly quizSubmissionService: QuizSubmissionService) {}
+  constructor(
+    private readonly quizSubmissionService: QuizSubmissionService,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+  ) {}
 
   @Query(() => [QuizSubmission], { name: 'GetQuizSubmissions' })
   async getQuizSubmissions(
@@ -69,12 +76,34 @@ export class QuizSubmissionResolver {
     @Args('data', { type: () => CreateQuizSubmissionInput })
     data: Prisma.QuizSubmissionCreateInput,
     @Context() { req }: GqlContext,
+    @Args('idempotencyKey', { type: () => String, nullable: true })
+    idempotencyKey?: string,
   ): Promise<QuizSubmission> {
     const token = extractTokenFromHeader(req);
     if (!token) {
       throw new Error('No token provided');
     }
 
-    return await this.quizSubmissionService.createQuizSubmission(data, token);
+    const key = idempotencyKey || uuidv4();
+
+    // Check cache first (fast path)
+    const cached = await this.cacheManager.get<QuizSubmission>(
+      `submission:${key}`,
+    );
+    if (cached) return cached;
+
+    // Check DB or use unique constraint
+    const existing =
+      await this.quizSubmissionService.getQuizSubmissionByIdempotencyKey(key);
+    if (existing) return existing;
+
+    const submission = await this.quizSubmissionService.createQuizSubmission(
+      data,
+      token,
+      key,
+    );
+
+    await this.cacheManager.set(`submission:${key}`, submission, 3600);
+    return submission;
   }
 }

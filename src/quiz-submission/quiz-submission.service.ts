@@ -34,6 +34,12 @@ export class QuizSubmissionService {
     return await this.repo.getQuizSubmission(id);
   }
 
+  async getQuizSubmissionByIdempotencyKey(
+    idempotencyKey: string,
+  ): Promise<QuizSubmission | null> {
+    return await this.repo.getQuizSubmissionByIdempotencyKey(idempotencyKey);
+  }
+
   async deleteQuizSubmission(id: string): Promise<QuizSubmission | null> {
     return await this.repo.deleteQuizSubmission(id);
   }
@@ -48,6 +54,7 @@ export class QuizSubmissionService {
   async createQuizSubmission(
     data: Prisma.QuizSubmissionCreateInput,
     token: string,
+    idempotencyKey?: string,
   ): Promise<QuizSubmission> {
     const userId = this.userService.getUserIdFromToken(token);
     if (!userId) {
@@ -57,6 +64,7 @@ export class QuizSubmissionService {
     const payload = {
       ...data,
       User: { connect: { id: userId } },
+      idempotencyKey: idempotencyKey ?? undefined,
     };
 
     const quizSubmission = await this.repo.createQuizSubmission(payload);
